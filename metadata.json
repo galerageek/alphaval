@@ -1,0 +1,6 @@
+{
+  "name": "AlphaVal - Análise de Ações & Investimentos",
+  "description": "Plataforma de avaliação de ações e sugestões de investimentos baseada em indicadores técnicos e fundamentalistas do mercado, com arquitetura e código PHP exportável.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
