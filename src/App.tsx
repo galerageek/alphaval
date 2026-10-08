@@ -11,12 +11,32 @@ import { StockDetail } from './components/StockDetail';
 import { StockScreener } from './components/StockScreener';
 import { PortfolioSimulator } from './components/PortfolioSimulator';
 import { CustomStockModal } from './components/CustomStockModal';
+import { AdminConsole } from './components/AdminConsole';
 
 export default function App() {
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
+  const [adminView, setAdminView] = useState<'CONSOLE' | 'TERMINAL'>('TERMINAL');
   const [stocks, setStocks] = useState<StockEvaluation[]>(INITIAL_STOCKS);
   const [selectedStock, setSelectedStock] = useState<StockEvaluation>(INITIAL_STOCKS[0]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'detail' | 'screener' | 'simulator'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'detail' | 'screener' | 'simulator'>(() => {
+    try {
+      const saved = localStorage.getItem('alphaval_active_tab');
+      if (saved && ['overview', 'detail', 'screener', 'simulator'].includes(saved)) {
+        return saved as 'overview' | 'detail' | 'screener' | 'simulator';
+      }
+    } catch (e) {
+      console.warn('Erro ao ler tab salva:', e);
+    }
+    return 'simulator'; // Inicializa na Carteira de Investimentos
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('alphaval_active_tab', activeTab);
+    } catch (e) {
+      console.warn('Erro ao salvar tab:', e);
+    }
+  }, [activeTab]);
   
   // Modals
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
@@ -78,10 +98,33 @@ export default function App() {
 
   // 1. If user is not authenticated, show gatekeeper login screen
   if (!user) {
-    return <AuthScreen onLoginSuccess={(u) => setUser(u)} />;
+    return (
+      <AuthScreen 
+        onLoginSuccess={(u) => {
+          setUser(u);
+          setAdminView('TERMINAL'); // Entra sempre diretamente na Carteira / Terminal
+        }} 
+      />
+    );
   }
 
-  // 2. Main Authenticated Application
+  // 2. Dedicated Separate Administrative Console (Accessible ONLY to Admin)
+  if (user.role === 'admin' && adminView === 'CONSOLE') {
+    return (
+      <AdminConsole
+        adminUser={user}
+        onLogout={handleLogout}
+        onSwitchToTerminal={(targetTab) => {
+          if (targetTab) {
+            setActiveTab(targetTab);
+          }
+          setAdminView('TERMINAL');
+        }}
+      />
+    );
+  }
+
+  // 3. Main Investor Financial Terminal
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-300">
       
@@ -90,6 +133,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenNewStockModal={() => setIsStockModalOpen(true)}
+        onOpenAdminPanel={user.role === 'admin' ? () => setAdminView('CONSOLE') : undefined}
         selectedTicker={selectedStock?.ticker}
         user={user}
         onLogout={handleLogout}

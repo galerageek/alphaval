@@ -8,13 +8,15 @@ import {
   PlusCircle, 
   Layers, 
   LogOut, 
-  RefreshCw 
+  RefreshCw,
+  Shield
 } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: 'overview' | 'detail' | 'screener' | 'simulator';
   setActiveTab: (tab: 'overview' | 'detail' | 'screener' | 'simulator') => void;
   onOpenNewStockModal: () => void;
+  onOpenAdminPanel?: () => void;
   selectedTicker?: string;
   user: AuthUser | null;
   onLogout: () => void;
@@ -27,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
   onOpenNewStockModal,
+  onOpenAdminPanel,
   selectedTicker,
   user,
   onLogout,
@@ -121,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Zone 3: Primary actions & User Menu */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             
             {/* Add Custom Stock */}
             <button
@@ -132,15 +135,30 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Avaliar Ação</span>
             </button>
 
+            {/* Admin Console Switch Button (Visible ONLY to Admin) */}
+            {user?.role === 'admin' && onOpenAdminPanel && (
+              <button
+                onClick={onOpenAdminPanel}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-purple-300 bg-purple-950/70 hover:bg-purple-900/90 border border-purple-800 rounded-lg shadow-sm transition cursor-pointer whitespace-nowrap"
+                title="Abrir painel administrativo restrito de gestão de contas"
+              >
+                <Shield className="w-3.5 h-3.5 text-purple-400" />
+                <span className="hidden sm:inline">Console Admin</span>
+                <span className="sm:hidden">Admin</span>
+              </button>
+            )}
+
             {/* User Profile & Logout */}
             {user && (
-              <div className="flex items-center gap-2 border-l border-slate-800 pl-3">
-                <div className="hidden xl:block text-right">
+              <div className="flex items-center gap-2 sm:gap-3 border-l border-slate-800 pl-2 sm:pl-3">
+                <div className="hidden sm:block text-right">
                   <div className="text-xs font-semibold text-slate-200 leading-tight">
                     {user.name}
                   </div>
-                  <div className="text-[10px] text-emerald-400 font-mono">
-                    Conectado
+                  <div className="flex items-center justify-end gap-1 mt-0.5">
+                    <span className={`text-[10px] font-mono ${user.role === 'admin' ? 'text-purple-400 font-bold' : 'text-emerald-400'}`}>
+                      {user.role === 'admin' ? 'ADMIN' : 'INVESTIDOR'}
+                    </span>
                   </div>
                 </div>
 
@@ -157,6 +175,46 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
         </div>
+      </div>
+
+      {/* Mobile Navigation Sub-bar */}
+      <div className="md:hidden border-t border-slate-800/80 bg-slate-950 px-3 py-2 flex items-center justify-around text-xs">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex items-center gap-1 px-2 py-1 rounded cursor-pointer ${
+            activeTab === 'overview' ? 'text-emerald-400 font-bold bg-slate-900' : 'text-slate-400'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Mercado</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('detail')}
+          className={`flex items-center gap-1 px-2 py-1 rounded cursor-pointer ${
+            activeTab === 'detail' ? 'text-emerald-400 font-bold bg-slate-900' : 'text-slate-400'
+          }`}
+        >
+          <BarChart2 className="w-3.5 h-3.5" />
+          <span>Raio-X</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('screener')}
+          className={`flex items-center gap-1 px-2 py-1 rounded cursor-pointer ${
+            activeTab === 'screener' ? 'text-emerald-400 font-bold bg-slate-900' : 'text-slate-400'
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span>Screener</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('simulator')}
+          className={`flex items-center gap-1 px-2 py-1 rounded cursor-pointer ${
+            activeTab === 'simulator' ? 'text-emerald-400 font-bold bg-slate-900' : 'text-slate-400'
+          }`}
+        >
+          <PieChart className="w-3.5 h-3.5" />
+          <span>Carteira</span>
+        </button>
       </div>
     </header>
   );

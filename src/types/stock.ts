@@ -82,3 +82,12 @@ export interface PortfolioAllocation {
   targetPrice: number;
   strategy: InvestmentStrategy;
 }
+
+export interface UserPortfolioItem {
+  id: string;
+  ticker: string;
+  quantity: number;
+  averagePrice: number;
+  addedAt: string;
+}
+
